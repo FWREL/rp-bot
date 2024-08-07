@@ -99,8 +99,8 @@ module.exports = {
             )
             .setTimestamp()
             .setFooter({
-              text: `Server: ${interaction.guild.name}`,
-              iconURL: interaction.guild.iconURL(),
+              text: `${interaction.user.username} | ${interaction.guild.name}`,
+              iconURL: interaction.user.displayAvatarURL(),
             });
 
           registerLogChannel.send({ embeds: [editLogEmbed] });
