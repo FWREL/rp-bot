@@ -7,6 +7,7 @@ const userProfileSchema = new Schema({
   description: { type: String, default: null },
   skills: { type: [String], default: [] },
   gender: { type: String, enum: ["Male", "Female"], required: true },
+  profilePicture: { type: String, default: null },
 });
 
 module.exports = model("UserProfile", userProfileSchema);

@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
 const UserProfile = require("../../Models/UserProfile");
+const AdminChannel = require("../../Models/AdminChannels");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -26,6 +27,11 @@ module.exports = {
           { name: "Male", value: "Male" },
           { name: "Female", value: "Female" }
         )
+    )
+    .addStringOption((option) =>
+      option
+        .setName("profilepicture")
+        .setDescription("URL of your character's profile picture")
     ),
 
   async execute(interaction) {
@@ -33,6 +39,7 @@ module.exports = {
     const characterName = interaction.options.getString("fullname");
     const dateOfBirthStr = interaction.options.getString("dateofbirth");
     const gender = interaction.options.getString("gender");
+    const profilePicture = interaction.options.getString("profilepicture");
 
     if (!dateOfBirthStr) {
       return await interaction.reply({
@@ -84,17 +91,47 @@ module.exports = {
         characterName,
         dateOfBirth,
         gender,
+        profilePicture: profilePicture || "https://via.placeholder.com/100",
       });
 
       await newUserProfile.save();
+
+      // Create a log for new user
+      const adminChannel = await AdminChannel.findOne({ name: "registerLog" });
+      const registerLogChannel = adminChannel
+        ? interaction.client.channels.cache.get(adminChannel.channelId)
+        : null;
+
+      if (registerLogChannel) {
+        const registerLogEmbed = new EmbedBuilder()
+          .setColor("DarkGreen")
+          .setTitle("New Character Registered")
+          .setDescription("A new character has been registered.")
+          .addFields(
+            { name: "Character Name", value: characterName, inline: true },
+            {
+              name: "Date of Birth",
+              value: dateOfBirth.toLocaleDateString(),
+              inline: true,
+            },
+            { name: "Gender", value: gender, inline: true }
+          )
+          .setThumbnail(profilePicture || "https://via.placeholder.com/100")
+          .setTimestamp()
+          .setFooter({
+            text: `${interaction.user.username} | ${interaction.guild.name}`,
+            iconURL: interaction.user.displayAvatarURL(),
+          });
+
+        registerLogChannel.send({ embeds: [registerLogEmbed] });
+      }
+
       return await interaction.reply({
         embeds: [
           new EmbedBuilder()
             .setColor("Green")
             .setDescription(
-              `Your character **${characterName}** has been registered with a date of birth *${
-                dateOfBirth.toISOString().split("T")[0]
-              }*.`
+              `Your character **${characterName}** has been registered.`
             ),
         ],
         emphemeral: true,

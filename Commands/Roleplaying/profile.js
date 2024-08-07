@@ -78,11 +78,6 @@ module.exports = {
           });
         }
 
-        const userAvatarURL = interaction.user.displayAvatarURL({
-          format: "png",
-          size: 128,
-        });
-
         const embed = new EmbedBuilder()
           .setColor("Blurple")
           .setTitle(`${userProfile.characterName}`)
@@ -105,12 +100,14 @@ module.exports = {
               value:
                 userProfile.skills.length > 0
                   ? userProfile.skills.join(", ")
-                  : "No skills listed",
+                  : "No skills learned",
             }
           )
-          .setThumbnail(userAvatarURL)
+          .setThumbnail(
+            userProfile.profilePicture || "https://via.placeholder.com/100"
+          )
           .setFooter({
-            text: "Identification Card",
+            text: `Identification Card | ${interaction.guild.name}`,
           });
 
         await interaction.reply({ embeds: [embed] });
