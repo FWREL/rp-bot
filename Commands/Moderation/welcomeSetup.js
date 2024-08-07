@@ -8,14 +8,21 @@ const welcomeSchema = require("../../Models/Welcome");
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("welcome-setup")
-    .setDescription("Setup the welcome system")
+    .setDescription("Setup the welcome and farewell system")
     .addChannelOption((option) =>
       option
-        .setName("channel")
+        .setName("welcome-channel")
         .setDescription("The channel where the welcome message will be sent")
         .setRequired(true)
+    )
+    .addChannelOption((option) =>
+      option
+        .setName("farewell-channel")
+        .setDescription("The channel where the farewell message will be sent")
+        .setRequired(true)
     ),
-  async execute(interaction, client) {
+
+  async execute(interaction) {
     if (
       !interaction.member.permissions.has(
         PermissionsBitField.Flags.ManageChannels
@@ -33,32 +40,37 @@ module.exports = {
       });
     }
 
-    const channel = interaction.options.getChannel("channel");
+    const welcomeChannel = interaction.options.getChannel("welcome-channel");
+    const farewellChannel = interaction.options.getChannel("farewell-channel");
 
     try {
-      const data = await welcomeSchema.findOne({ Guild: interaction.guild.id });
+      let data = await welcomeSchema.findOne({ Guild: interaction.guild.id });
 
       if (data) {
-        return await interaction.reply({
-          content:
-            "You already have a welcome message system in place. To restart it, use the `/welcome-disable` command.",
-          ephemeral: true,
+        await welcomeSchema.updateOne(
+          { Guild: interaction.guild.id },
+          {
+            WelcomeChannel: welcomeChannel.id,
+            FarewellChannel: farewellChannel.id,
+          }
+        );
+      } else {
+        await welcomeSchema.create({
+          Guild: interaction.guild.id,
+          WelcomeChannel: welcomeChannel.id,
+          FarewellChannel: farewellChannel.id,
         });
       }
 
-      await welcomeSchema.create({
-        Guild: interaction.guild.id,
-        Channel: channel.id,
-      });
-
       await interaction.reply({
-        content: `The welcome system has been enabled within the ${channel}`,
+        content: `The welcome system has been set up in ${welcomeChannel} and the farewell system has been set up in ${farewellChannel}.`,
         ephemeral: true,
       });
     } catch (error) {
       console.error(error);
       await interaction.reply({
-        content: "There was an error while setting up the welcome system.",
+        content:
+          "There was an error while setting up the welcome and farewell system.",
         ephemeral: true,
       });
     }

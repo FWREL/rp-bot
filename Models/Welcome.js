@@ -1,8 +1,9 @@
-const { model, Schema } = require("mongoose");
+const { Schema, model } = require("mongoose");
 
-let welcomeSchema = new Schema({
+const welcomeSchema = new Schema({
   Guild: String,
-  Channel: String,
+  WelcomeChannel: String,
+  FarewellChannel: String,
 });
 
-module.exports = model("welcomeSchema", welcomeSchema);
+module.exports = model("Welcome", welcomeSchema);

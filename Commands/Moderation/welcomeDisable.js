@@ -8,7 +8,7 @@ const welcomeSchema = require("../../Models/Welcome");
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("welcome-disable")
-    .setDescription("Disable welcome message"),
+    .setDescription("Disable the welcome and farewell system"),
 
   async execute(interaction) {
     if (
@@ -35,33 +35,20 @@ module.exports = {
 
       if (result.deletedCount === 0) {
         return await interaction.reply({
-          embeds: [
-            new EmbedBuilder()
-              .setColor("Blurple")
-              .setDescription("There was no welcome system to disable."),
-          ],
+          content: "There was no welcome or farewell system to disable.",
           ephemeral: true,
         });
       }
 
       await interaction.reply({
-        embeds: [
-          new EmbedBuilder()
-            .setColor("Green")
-            .setDescription("The welcome system has been disabled."),
-        ],
+        content: `The welcome and farewell system has been disabled.`,
         ephemeral: true,
       });
     } catch (error) {
-      console.error("Error disabling welcome system:", error);
+      console.error("Error disabling welcome and farewell system:", error);
       await interaction.reply({
-        embeds: [
-          new EmbedBuilder()
-            .setColor("Red")
-            .setDescription(
-              "There was an error while disabling the welcome system."
-            ),
-        ],
+        content:
+          "There was an error while disabling the welcome and farewell system.",
         ephemeral: true,
       });
     }
