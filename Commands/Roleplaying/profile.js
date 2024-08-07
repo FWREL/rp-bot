@@ -147,9 +147,7 @@ module.exports = {
           .addFields(
             {
               name: "Date of Birth",
-              value: userProfile.dateOfBirth
-                ? userProfile.dateOfBirth.toISOString().split("T")[0]
-                : "Not set",
+              value: userProfile.dateOfBirth.toLocaleDateString() || "N/A",
               inline: true,
             },
             {
