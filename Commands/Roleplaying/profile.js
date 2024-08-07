@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
 const UserProfile = require("../../Models/UserProfile");
+const AdminChannel = require("../../Models/AdminChannels");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -16,7 +17,11 @@ module.exports = {
           option
             .setName("description")
             .setDescription("New description for your character")
-            .setRequired(true)
+        )
+        .addStringOption((option) =>
+          option
+            .setName("profile_picture")
+            .setDescription("New profile picture for your character")
         )
     ),
 
@@ -26,6 +31,8 @@ module.exports = {
 
     if (subcommand === "edit") {
       const newDescription = interaction.options.getString("description");
+      const newProfilePicture =
+        interaction.options.getString("profile_picture");
 
       try {
         const userProfile = await UserProfile.findOne({ userId: userId });
@@ -41,14 +48,69 @@ module.exports = {
           });
         }
 
-        userProfile.description = newDescription;
+        if (newDescription) {
+          userProfile.description = newDescription;
+        }
+
+        if (newProfilePicture) {
+          userProfile.profilePicture = newProfilePicture;
+        }
+
         await userProfile.save();
+
+        // Log Admin
+        const adminChannel = await AdminChannel.findOne({
+          name: "registerLog",
+        });
+        const registerLogChannel = adminChannel
+          ? interaction.client.channels.cache.get(adminChannel.channelId)
+          : null;
+
+        if (registerLogChannel) {
+          const editLogEmbed = new EmbedBuilder()
+            .setColor("Blurple")
+            .setTitle("Character Profile Edited")
+            .setDescription("A character profile has been edited.")
+            .addFields(
+              {
+                name: "Character Name",
+                value: userProfile.characterName,
+                inline: true,
+              },
+              {
+                name: "Date of Birth",
+                value: userProfile.dateOfBirth.toLocaleDateString(),
+                inline: true,
+              },
+              { name: "Gender", value: userProfile.gender, inline: true },
+              {
+                name: "Description",
+                value: newDescription || userProfile.description,
+              },
+              {
+                name: "Profile Picture",
+                value: newProfilePicture || userProfile.profilePicture,
+              }
+            )
+            .setThumbnail(
+              newProfilePicture ||
+                userProfile.profilePicture ||
+                "https://via.placeholder.com/100"
+            )
+            .setTimestamp()
+            .setFooter({
+              text: `Server: ${interaction.guild.name}`,
+              iconURL: interaction.guild.iconURL(),
+            });
+
+          registerLogChannel.send({ embeds: [editLogEmbed] });
+        }
 
         return await interaction.reply({
           embeds: [
             new EmbedBuilder()
               .setColor("Blurple")
-              .setDescription("Your character description has been updated."),
+              .setDescription("Your character profile has been updated."),
           ],
           emphemeral: true,
         });

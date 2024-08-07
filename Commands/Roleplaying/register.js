@@ -14,7 +14,7 @@ module.exports = {
     )
     .addStringOption((option) =>
       option
-        .setName("dateofbirth")
+        .setName("date_of_birth")
         .setDescription("The date of birth in DD-MM-YYYY format")
         .setRequired(true)
     )
@@ -30,7 +30,7 @@ module.exports = {
     )
     .addStringOption((option) =>
       option
-        .setName("profilepicture")
+        .setName("profile_picture")
         .setDescription("URL of your character's profile picture")
     ),
 
