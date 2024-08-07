@@ -3,7 +3,7 @@ const UserProfile = require("../../Models/UserProfile");
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName("adminregister")
+    .setName("adminaccount")
     .setDescription("Manage user profiles")
     .addStringOption((option) =>
       option
