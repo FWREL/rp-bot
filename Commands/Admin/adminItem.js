@@ -53,6 +53,9 @@ module.exports = {
             .setName("description")
             .setDescription("The new description of the item")
         )
+        .addStringOption((option) =>
+          option.setName("image").setDescription("Image of the item")
+        )
     )
     .addSubcommand((subcommand) =>
       subcommand
@@ -67,7 +70,6 @@ module.exports = {
     ),
 
   async execute(interaction) {
-    // Check if the user has the "Administrator" role
     if (!interaction.member.permissions.has("ADMINISTRATOR")) {
       return interaction.reply({
         embeds: [
@@ -85,9 +87,10 @@ module.exports = {
       const name = interaction.options.getString("name");
       const description = interaction.options.getString("description");
       const itemId = interaction.options.getInteger("id");
-      const imageURL = interaction.options.getString("image");
+      const imageURL =
+        interaction.options.getString("image") ||
+        "https://via.placeholder.com/100";
 
-      // Check if item with the same ID already exists
       const existingItem = await Item.findOne({ itemId });
       if (existingItem) {
         return interaction.reply({
@@ -100,7 +103,6 @@ module.exports = {
         });
       }
 
-      // Create a new item
       const newItem = new Item({
         itemId,
         name,
@@ -110,10 +112,7 @@ module.exports = {
 
       await newItem.save();
 
-      // Log for creating item
-      const adminChannel = await AdminChannels.findOne({
-        name: "itemLog",
-      });
+      const adminChannel = await AdminChannels.findOne({ name: "itemLog" });
       const createItemLogChannel = adminChannel
         ? interaction.client.channels.cache.get(adminChannel.channelId)
         : null;
@@ -126,22 +125,14 @@ module.exports = {
             `An item has been created by ${interaction.user.tag}.`
           )
           .addFields(
-            {
-              name: "ID: ",
-              value: itemId.toString(),
-              inline: true,
-            },
-            {
-              name: "Name Item: ",
-              value: name,
-              inline: true,
-            },
+            { name: "ID: ", value: itemId.toString(), inline: true },
+            { name: "Name Item: ", value: name, inline: true },
             {
               name: "Description: ",
-              value: description,
+              value: description || "No description provided.",
             }
           )
-          .setThumbnail(imageURL || "https://via.placeholder.com/100")
+          .setThumbnail(imageURL)
           .setTimestamp()
           .setFooter({
             text: `${interaction.guild.name} | By: ${interaction.user.username}`,
@@ -166,7 +157,6 @@ module.exports = {
       const description = interaction.options.getString("description");
       const image = interaction.options.getString("image");
 
-      // Find the item by ID
       const item = await Item.findOne({ itemId });
       if (!item) {
         return interaction.reply({
@@ -179,17 +169,13 @@ module.exports = {
         });
       }
 
-      // Update item details
       if (name) item.name = name;
       if (description) item.description = description;
       if (image) item.imageURL = image;
 
       await item.save();
 
-      // Log for editing item
-      const adminChannel = await AdminChannels.findOne({
-        name: "itemLog",
-      });
+      const adminChannel = await AdminChannels.findOne({ name: "itemLog" });
       const editItemLogChannel = adminChannel
         ? interaction.client.channels.cache.get(adminChannel.channelId)
         : null;
@@ -200,22 +186,13 @@ module.exports = {
           .setTitle(`Editing an item by Admin`)
           .setDescription(`An item has been edited by ${interaction.user.tag}.`)
           .addFields(
-            {
-              name: "ID: ",
-              value: itemId.toString(),
-              inline: true,
-            },
-            {
-              name: "Name Item: ",
-              value: name,
-              inline: true,
-            },
-            {
-              name: "Description: ",
-              value: description,
-            }
+            { name: "ID: ", value: itemId.toString(), inline: true },
+            { name: "Name Item: ", value: name || item.name, inline: true },
+            { name: "Description: ", value: description || item.description }
           )
-          .setThumbnail(image || "https://via.placeholder.com/100")
+          .setThumbnail(
+            image || item.imageURL || "https://via.placeholder.com/100"
+          )
           .setTimestamp()
           .setFooter({
             text: `${interaction.guild.name} | By: ${interaction.user.username}`,
@@ -235,7 +212,6 @@ module.exports = {
     } else if (subcommand === "delete") {
       const itemId = interaction.options.getInteger("id");
 
-      // Find the item by itemId
       const item = await Item.findOne({ itemId });
       if (!item) {
         return interaction.reply({
@@ -248,13 +224,9 @@ module.exports = {
         });
       }
 
-      // Delete the item
       await item.deleteOne({ itemId });
 
-      // Log for editing item
-      const adminChannel = await AdminChannels.findOne({
-        name: "itemLog",
-      });
+      const adminChannel = await AdminChannels.findOne({ name: "itemLog" });
       const deleteItemLogChannel = adminChannel
         ? interaction.client.channels.cache.get(adminChannel.channelId)
         : null;
@@ -267,22 +239,14 @@ module.exports = {
             `An item has been deleted by ${interaction.user.tag}.`
           )
           .addFields(
-            {
-              name: "ID: ",
-              value: itemId.toString(),
-              inline: true,
-            },
-            {
-              name: "Name Item: ",
-              value: name,
-              inline: true,
-            },
+            { name: "ID: ", value: itemId.toString(), inline: true },
+            { name: "Name Item: ", value: item.name, inline: true },
             {
               name: "Description: ",
-              value: description,
+              value: item.description || "No description available.",
             }
           )
-          .setThumbnail(image || "https://via.placeholder.com/100")
+          .setThumbnail(item.imageURL || "https://via.placeholder.com/100")
           .setTimestamp()
           .setFooter({
             text: `${interaction.guild.name} | By: ${interaction.user.username}`,
