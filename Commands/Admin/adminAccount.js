@@ -194,10 +194,6 @@ module.exports = {
             },
             { name: "Gender", value: userProfile.gender, inline: true },
             { name: "New Description", value: newDescription },
-            {
-              name: "New Profile Picture",
-              value: newProfilePicture || userProfile.profilePicture,
-            },
             { name: "Reason", value: reason }
           )
           .setThumbnail(
