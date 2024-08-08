@@ -211,6 +211,13 @@ module.exports = {
           await user.send({ embeds: [userDmEmbed] });
         } catch (err) {
           console.error(`Could not send DM to user ${user.tag}: ${err}`);
+          return await interaction.reply({
+            embeds: [
+              new EmbedBuilder()
+                .setColor("Red")
+                .setDescription(`The user can't be notifed on DMs!`),
+            ],
+          });
         }
 
         return await interaction.reply({
