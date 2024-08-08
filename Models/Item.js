@@ -4,7 +4,7 @@ const itemSchema = new Schema({
   itemId: { type: Number, required: true, unique: true },
   name: { type: String, required: true },
   description: { type: String, required: true },
-  imageURL: { type: String },
+  imageURL: { type: String, default: null },
   value: { type: Number, default: 0 },
 });
 
