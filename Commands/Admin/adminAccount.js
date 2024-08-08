@@ -231,8 +231,120 @@ module.exports = {
       }
 
       if (action === "delete") {
+        if (!reason) {
+          return await interaction.reply({
+            embeds: [
+              new EmbedBuilder()
+                .setColor("Red")
+                .setDescription("Reason is required for editing"),
+            ],
+            ephemeral: true,
+          });
+        }
+
         // Delete profile
         await UserProfile.deleteOne({ userId: user.id });
+
+        const adminChannel = await AdminChannel.findOne({
+          name: "registerLog",
+        });
+        const deletedLogChannel = adminChannel
+          ? interaction.client.channels.cache.get(adminChannel.channelId)
+          : null;
+
+        if (deletedLogChannel) {
+          const deleteLogEmbed = new EmbedBuilder()
+            .setColor("Blurple")
+            .setTitle(`Character Profile Deleted by Admin`)
+            .setDescription(
+              `A character profile has been deleted by ${interaction.user.tag}.`
+            )
+            .addFields(
+              {
+                name: "Character Name",
+                value: userProfile.characterName,
+                inline: true,
+              },
+              {
+                name: "Date of Birth",
+                value: userProfile.dateOfBirth.toLocaleDateString(),
+                inline: true,
+              },
+              { name: "Gender", value: userProfile.gender, inline: true },
+              { name: "Description", value: userProfile.description },
+              {
+                name: "Profile Picture",
+                value: userProfile.profilePicture,
+              },
+              {
+                name: "Skills",
+                value: userProfile.skills || "No skills Learned",
+              },
+              { name: "Reason", value: reason }
+            )
+            .setThumbnail(
+              userProfile.profilePicture || "https://via.placeholder.com/100"
+            )
+            .setTimestamp()
+            .setFooter({
+              text: `${interaction.guild.name} | Edited by: ${interaction.user.username}`,
+              iconURL: interaction.user.displayAvatarURL(),
+            });
+
+          registerLogChannel.send({ embeds: [editLogEmbed] });
+        }
+
+        // Notify the user via DM
+        const deleteDmEmbed = new EmbedBuilder()
+          .setColor("Blurple")
+          .setTitle("Your Character Profile has been Deleted")
+          .setDescription(
+            `Your character profile has been deleted by an admin.`
+          )
+          .addFields(
+            {
+              name: "Character Name",
+              value: userProfile.characterName,
+              inline: true,
+            },
+            {
+              name: "Date of Birth",
+              value: userProfile.dateOfBirth.toLocaleDateString(),
+              inline: true,
+            },
+            { name: "Gender", value: userProfile.gender, inline: true },
+            { name: "Description", value: userProfile.description },
+            {
+              name: "Profile Picture",
+              value: userProfile.profilePicture,
+            },
+            {
+              name: "Skills",
+              value: userProfile.skills || "No skills Learned",
+            },
+            { name: "Reason", value: reason }
+          )
+          .setThumbnail(
+            userProfile.profilePicture || "https://via.placeholder.com/100"
+          )
+          .setTimestamp()
+          .setFooter({
+            text: `${interaction.guild.name} | Edited by: ${interaction.user.username}`,
+            iconURL: interaction.user.displayAvatarURL(),
+          });
+
+        try {
+          await user.send({ embeds: [deleteDmEmbed] });
+        } catch (err) {
+          console.error(`Could not send DM to user ${user.tag}: ${err}`);
+          return await interaction.reply({
+            embeds: [
+              new EmbedBuilder()
+                .setColor("Red")
+                .setDescription(`The user can't be notifed on DMs!`),
+            ],
+          });
+        }
 
         return await interaction.reply({
           embeds: [
