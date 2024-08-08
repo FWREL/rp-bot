@@ -84,17 +84,17 @@ module.exports = {
     if (subcommand === "create") {
       const name = interaction.options.getString("name");
       const description = interaction.options.getString("description");
-      const id = interaction.options.getInteger("id");
+      const itemId = interaction.options.getInteger("id");
       const imageURL = interaction.options.getString("image");
 
       // Check if item with the same ID already exists
-      const existingItem = await Item.findOne({ id });
+      const existingItem = await Item.findOne({ itemId });
       if (existingItem) {
         return interaction.reply({
           embeds: [
             new EmbedBuilder()
               .setColor("Red")
-              .setDescription(`Item with ID ${id} already exists.`),
+              .setDescription(`Item with ID ${itemId} already exists.`),
           ],
           ephemeral: true,
         });
@@ -102,7 +102,7 @@ module.exports = {
 
       // Create a new item
       const newItem = new Item({
-        id,
+        itemId,
         name,
         description,
         imageURL,
@@ -128,7 +128,7 @@ module.exports = {
           .addFields(
             {
               name: "ID: ",
-              value: id,
+              value: itemId.toString(),
               inline: true,
             },
             {
@@ -156,24 +156,24 @@ module.exports = {
           new EmbedBuilder()
             .setColor("Green")
             .setDescription(
-              `Item **${name}** has been created with ID **${id}**.`
+              `Item **${name}** has been created with ID **${itemId}**.`
             ),
         ],
       });
     } else if (subcommand === "edit") {
-      const id = interaction.options.getInteger("id");
+      const itemId = interaction.options.getInteger("id");
       const name = interaction.options.getString("name");
       const description = interaction.options.getString("description");
       const image = interaction.options.getString("image");
 
       // Find the item by ID
-      const item = await Item.findOne({ id });
+      const item = await Item.findOne({ itemId });
       if (!item) {
         return interaction.reply({
           embeds: [
             new EmbedBuilder()
               .setColor("Red")
-              .setDescription(`Item with ID ${id} not found.`),
+              .setDescription(`Item with ID ${itemId} not found.`),
           ],
           ephemeral: true,
         });
@@ -202,7 +202,7 @@ module.exports = {
           .addFields(
             {
               name: "ID: ",
-              value: id,
+              value: itemId.toString(),
               inline: true,
             },
             {
@@ -229,27 +229,27 @@ module.exports = {
         embeds: [
           new EmbedBuilder()
             .setColor("Green")
-            .setDescription(`Item with ID **${id}** has been updated.`),
+            .setDescription(`Item with ID **${itemId}** has been updated.`),
         ],
       });
     } else if (subcommand === "delete") {
-      const id = interaction.options.getInteger("id");
+      const itemId = interaction.options.getInteger("id");
 
-      // Find the item by ID
-      const item = await Item.findOne({ id });
+      // Find the item by itemId
+      const item = await Item.findOne({ itemId });
       if (!item) {
         return interaction.reply({
           embeds: [
             new EmbedBuilder()
               .setColor("Red")
-              .setDescription(`Item with ID ${id} not found.`),
+              .setDescription(`Item with ID ${itemId} not found.`),
           ],
           ephemeral: true,
         });
       }
 
       // Delete the item
-      await item.deleteOne({ id });
+      await item.deleteOne({ itemId });
 
       // Log for editing item
       const adminChannel = await AdminChannels.findOne({
@@ -269,7 +269,7 @@ module.exports = {
           .addFields(
             {
               name: "ID: ",
-              value: id,
+              value: itemId.toString(),
               inline: true,
             },
             {
@@ -296,7 +296,7 @@ module.exports = {
         embeds: [
           new EmbedBuilder()
             .setColor("Green")
-            .setDescription(`Item with ID **${id}** has been deleted.`),
+            .setDescription(`Item with ID **${itemId}** has been deleted.`),
         ],
       });
     }
