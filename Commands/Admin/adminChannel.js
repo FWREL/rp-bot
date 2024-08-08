@@ -19,13 +19,13 @@ module.exports = {
       option
         .setName("channel")
         .setDescription("The channel to set")
-        .setRequired(false)
+        .setRequired(true)
     )
     .addStringOption((option) =>
       option
         .setName("name")
         .setDescription("The name to assign to the channel")
-        .setRequired(false)
+        .setRequired(true)
     ),
 
   async execute(interaction) {
