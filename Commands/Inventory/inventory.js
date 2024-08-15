@@ -30,7 +30,7 @@ module.exports = {
 
       const embed = new EmbedBuilder()
         .setColor("Blurple")
-        .setTitle(`${userProfile.characterName}'s Inventory`);
+        .setTitle(`${userProfile?.characterName || "Your"}'s Inventory`);
 
       const superscriptMap = {
         0: "⁰",
@@ -46,18 +46,28 @@ module.exports = {
       };
 
       userInventory.items.forEach((inventoryItem) => {
+        if (!inventoryItem.itemId || !inventoryItem.itemId.itemId) {
+          console.warn(
+            `Missing itemId for inventory item: ${JSON.stringify(
+              inventoryItem
+            )}`
+          );
+          return;
+        }
+
         const itemId = inventoryItem.itemId.itemId.toString().padStart(3, "0");
-        const itemName = inventoryItem.itemId.name;
+        const itemIcon = inventoryItem.itemId.icon || "🔲";
+        const itemName = inventoryItem.itemId.name || "Unknown Item";
         const itemQuantity = inventoryItem.quantity
           .toString()
           .padStart(3, "0")
           .split("")
-          .map((num) => superscriptMap[num])
+          .map((num) => superscriptMap[num] || "")
           .join("");
 
         embed.addFields({
-          name: ` \`${itemId}\` ${itemName} ${itemQuantity}`,
-          value: `➥ ${inventoryItem.itemId.description}`,
+          name: `\`${itemId}\` ${itemIcon} ${itemQuantity}`,
+          value: `➥ ${itemName}`,
           inline: true,
         });
       });

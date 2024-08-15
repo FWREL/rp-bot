@@ -18,6 +18,12 @@ module.exports = {
         )
         .addStringOption((option) =>
           option
+            .setName("icon")
+            .setDescription("The icon for the item using discord emojis format")
+            .setRequired(true)
+        )
+        .addStringOption((option) =>
+          option
             .setName("name")
             .setDescription("The name of the item")
             .setRequired(true)
@@ -44,6 +50,11 @@ module.exports = {
             .setName("id")
             .setDescription("The ID of the item to edit")
             .setRequired(true)
+        )
+        .addStringOption((option) =>
+          option
+            .setName("icon")
+            .setDescription("The icon for the item using discord emojis format")
         )
         .addStringOption((option) =>
           option.setName("name").setDescription("The new name of the item")
@@ -84,6 +95,7 @@ module.exports = {
     const subcommand = interaction.options.getSubcommand();
 
     if (subcommand === "create") {
+      const icon = interaction.options.getString("icon");
       const name = interaction.options.getString("name");
       const description = interaction.options.getString("description");
       const itemId = interaction.options.getInteger("id");
@@ -105,6 +117,7 @@ module.exports = {
 
       const newItem = new Item({
         itemId,
+        icon,
         name,
         description,
         imageURL,
@@ -126,6 +139,7 @@ module.exports = {
           )
           .addFields(
             { name: "ID: ", value: itemId.toString(), inline: true },
+            { name: "Icon: ", value: icon, inline: true },
             { name: "Name Item: ", value: name, inline: true },
             {
               name: "Description: ",
@@ -153,6 +167,7 @@ module.exports = {
       });
     } else if (subcommand === "edit") {
       const itemId = interaction.options.getInteger("id");
+      const icon = interaction.options.getString("icon");
       const name = interaction.options.getString("name");
       const description = interaction.options.getString("description");
       const image = interaction.options.getString("image");
@@ -169,6 +184,7 @@ module.exports = {
         });
       }
 
+      if (icon) item.icon = icon;
       if (name) item.name = name;
       if (description) item.description = description;
       if (image) item.imageURL = image;
@@ -187,8 +203,20 @@ module.exports = {
           .setDescription(`An item has been edited by ${interaction.user.tag}.`)
           .addFields(
             { name: "ID: ", value: itemId.toString(), inline: true },
-            { name: "Name Item: ", value: name || item.name, inline: true },
-            { name: "Description: ", value: description || item.description }
+            {
+              name: "Icon: ",
+              value: icon || item.icon || "No Icon",
+              inline: true,
+            },
+            {
+              name: "Name Item: ",
+              value: name || item.name || "No Name",
+              inline: true,
+            },
+            {
+              name: "Description: ",
+              value: description || item.description || "No Description",
+            }
           )
           .setThumbnail(
             image || item.imageURL || "https://via.placeholder.com/100"
@@ -240,6 +268,7 @@ module.exports = {
           )
           .addFields(
             { name: "ID: ", value: itemId.toString(), inline: true },
+            { name: "Icon: ", value: item.icon, inline: true },
             { name: "Name Item: ", value: item.name, inline: true },
             {
               name: "Description: ",
