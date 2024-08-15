@@ -1,6 +1,7 @@
 const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
 const UserInventory = require("../../Models/UserInventory");
 const Item = require("../../Models/Item");
+const UserProfile = require("../../Models/UserProfile");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -11,6 +12,7 @@ module.exports = {
     const userId = interaction.user.id;
 
     try {
+      const userProfile = await UserProfile.findOne({ userId });
       const userInventory = await UserInventory.findOne({ userId }).populate(
         "items.itemId"
       );
@@ -20,7 +22,7 @@ module.exports = {
           embeds: [
             new EmbedBuilder()
               .setColor("Blurple")
-              .setDescription("Your inventory is empty"),
+              .setDescription("Your inventory is empty."),
           ],
           ephemeral: true,
         });
@@ -28,12 +30,34 @@ module.exports = {
 
       const embed = new EmbedBuilder()
         .setColor("Blurple")
-        .setTitle(`${interaction.user.username}'s Inventory`);
+        .setTitle(`${userProfile.characterName}'s Inventory`);
+
+      const superscriptMap = {
+        0: "⁰",
+        1: "¹",
+        2: "²",
+        3: "³",
+        4: "⁴",
+        5: "⁵",
+        6: "⁶",
+        7: "⁷",
+        8: "⁸",
+        9: "⁹",
+      };
 
       userInventory.items.forEach((inventoryItem) => {
+        const itemId = inventoryItem.itemId.itemId.toString().padStart(3, "0");
+        const itemName = inventoryItem.itemId.name;
+        const itemQuantity = inventoryItem.quantity
+          .toString()
+          .padStart(3, "0")
+          .split("")
+          .map((num) => superscriptMap[num])
+          .join("");
+
         embed.addFields({
-          name: `${inventoryItem.itemId.name} (ID: ${inventoryItem.itemId.itemId})`,
-          value: `Quantity: ${inventoryItem.quantity}\nDescription: ${inventoryItem.itemId.description}`,
+          name: ` \`${itemId}\` ${itemName} ${itemQuantity}`,
+          value: `➥ ${inventoryItem.itemId.description}`,
           inline: true,
         });
       });
@@ -42,12 +66,12 @@ module.exports = {
         embeds: [embed],
       });
     } catch (err) {
-      console.error(err);
+      console.error("Error fetching inventory:", err);
       return await interaction.reply({
         embeds: [
           new EmbedBuilder()
             .setColor("Red")
-            .setDescription("An error occured while fetching your inventory."),
+            .setDescription("An error occurred while fetching your inventory."),
         ],
         ephemeral: true,
       });

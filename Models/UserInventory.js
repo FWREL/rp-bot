@@ -4,8 +4,8 @@ const userInventorySchema = new Schema({
   userId: { type: String, required: true },
   items: [
     {
-      itemId: { type: Schema.Types.ObjectId, ref: "item" },
-      quantity: { type: Number, default: 1 },
+      itemId: { type: Schema.Types.ObjectId, ref: "Item" },
+      quantity: { type: Number, default: 0 },
     },
   ],
 });

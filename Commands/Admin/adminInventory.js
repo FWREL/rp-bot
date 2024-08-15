@@ -51,7 +51,8 @@ module.exports = {
     const quantity = interaction.options.getInteger("quantity") || 1;
 
     try {
-      const userProfile = await UserInventory.findOne({ userId: user.id });
+      let userProfile = await UserInventory.findOne({ userId: user.id });
+      const userProfileData = await UserProfile.findOne({ userId: user.id });
 
       if (action === "view") {
         // View inventory
@@ -68,7 +69,7 @@ module.exports = {
 
         const embed = new EmbedBuilder()
           .setColor("Blurple")
-          .setTitle(`${user.username}'s Inventory`);
+          .setTitle(`${userProfileData.characterName}'s Inventory`);
 
         userProfile.items.forEach((inventoryItem) => {
           embed.addFields({
@@ -151,12 +152,12 @@ module.exports = {
               },
               {
                 name: "To: ",
-                value: `\`${UserProfile.characterName}\``,
+                value: `\`${userProfileData.characterName}\``,
               }
             )
             .setTimestamp()
             .setFooter({
-              text: `${interaction.guild.name} | Edited by: ${interaction.user.username}`,
+              text: `${interaction.guild.name} | Added by: ${interaction.user.username}`,
               iconURL: interaction.user.displayAvatarURL(),
             });
 
@@ -172,7 +173,7 @@ module.exports = {
           )
           .setTimestamp()
           .setFooter({
-            text: `${interaction.guild.name} | Edited by: ${interaction.user.username}`,
+            text: `${interaction.guild.name} | Added by: ${interaction.user.username}`,
             iconURL: interaction.user.displayAvatarURL(),
           });
 
@@ -241,7 +242,7 @@ module.exports = {
 
         await userProfile.save();
 
-        // Log deleting item
+        // Log removing item
         const adminChannel = await AdminChannels.findOne({
           name: "itemLog",
         });
@@ -252,9 +253,9 @@ module.exports = {
         if (deleteLogChannel) {
           const deleteLogEmbed = new EmbedBuilder()
             .setColor("Blurple")
-            .setTitle("Adding item to user by Admin")
+            .setTitle("Removing item to user by Admin")
             .setDescription(
-              `An item has been added by ${interaction.user.tag}.`
+              `An item has been removed by ${interaction.user.tag}.`
             )
             .addFields(
               {
@@ -268,13 +269,13 @@ module.exports = {
                 inline: true,
               },
               {
-                name: "To: ",
-                value: `\`${UserProfile.characterName}\``,
+                name: "From: ",
+                value: `\`${userProfileData.characterName}\``,
               }
             )
             .setTimestamp()
             .setFooter({
-              text: `${interaction.guild.name} | Edited by: ${interaction.user.username}`,
+              text: `${interaction.guild.name} | Removed by: ${interaction.user.username}`,
               iconURL: interaction.user.displayAvatarURL(),
             });
 
@@ -290,7 +291,7 @@ module.exports = {
           )
           .setTimestamp()
           .setFooter({
-            text: `${interaction.guild.name} | Edited by: ${interaction.user.username}`,
+            text: `${interaction.guild.name} | Removed by: ${interaction.user.username}`,
             iconURL: interaction.user.displayAvatarURL(),
           });
 
