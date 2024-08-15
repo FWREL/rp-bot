@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
 const Item = require("../../Models/Item");
+const UserInventory = require("../../Models/UserInventory");
 const AdminChannels = require("../../Models/AdminChannels");
 
 module.exports = {
@@ -9,7 +10,7 @@ module.exports = {
     .addSubcommand((subcommand) =>
       subcommand
         .setName("create")
-        .setDescription("Create a new item to the inventory")
+        .setDescription("Create a new item in the inventory")
         .addIntegerOption((option) =>
           option
             .setName("id")
@@ -19,7 +20,7 @@ module.exports = {
         .addStringOption((option) =>
           option
             .setName("icon")
-            .setDescription("The icon for the item using discord emojis format")
+            .setDescription("The icon for the item using Discord emojis format")
             .setRequired(true)
         )
         .addStringOption((option) =>
@@ -54,7 +55,7 @@ module.exports = {
         .addStringOption((option) =>
           option
             .setName("icon")
-            .setDescription("The icon for the item using discord emojis format")
+            .setDescription("The icon for the item using Discord emojis format")
         )
         .addStringOption((option) =>
           option.setName("name").setDescription("The new name of the item")
@@ -252,7 +253,13 @@ module.exports = {
         });
       }
 
-      await item.deleteOne({ itemId });
+      // Hapus item dari UserInventory juga
+      await UserInventory.updateMany(
+        { "items.itemId": item._id },
+        { $pull: { items: { itemId: item._id } } }
+      );
+
+      await item.deleteOne(); // Hapus item dari database
 
       const adminChannel = await AdminChannels.findOne({ name: "itemLog" });
       const deleteItemLogChannel = adminChannel
